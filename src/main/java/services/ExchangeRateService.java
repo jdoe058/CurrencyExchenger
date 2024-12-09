@@ -33,7 +33,7 @@ public class ExchangeRateService {
         String targetCode = code.substring(4).toUpperCase();
 
         try {
-            rate = exchangeRateDao.findByCode(baseCode, targetCode);
+            rate = exchangeRateDao.findByCodes(baseCode, targetCode);
         } catch (Exception e) {
             return errorService.get(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, INTERNAL_MESSAGE);
         }
