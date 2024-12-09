@@ -1,5 +1,6 @@
 package dao;
 
+import exeptions.ErrorException;
 import models.Currency;
 import util.ConnectionManager;
 
@@ -49,7 +50,7 @@ public class CurrencyDao {
     private CurrencyDao() {
     }
 
-    public List<Currency> findAll() throws SQLException {
+    public List<Currency> findAll() {
         List<Currency> currencies = new ArrayList<>();
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
@@ -58,11 +59,13 @@ public class CurrencyDao {
                 currencies.add(buildCurrency(resultSet));
             }
             return currencies;
+        } catch (SQLException e) {
+            throw new ErrorException();
         }
     }
 
     //todo CurrencyFilterDto
-    public Optional<Currency> findByCode(String code) throws SQLException {
+    public Optional<Currency> findByCode(String code) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE_SQL)) {
             preparedStatement.setString(1, code);
@@ -72,6 +75,8 @@ public class CurrencyDao {
                 currency = buildCurrency(resultSet);
             }
             return Optional.ofNullable(currency);
+        } catch (SQLException e) {
+            throw new ErrorException();
         }
     }
 

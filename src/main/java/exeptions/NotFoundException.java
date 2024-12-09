@@ -1,6 +1,6 @@
 package exeptions;
 
-public class NotFoundException extends RuntimeException {
+public class NotFoundException extends ErrorException {
     public NotFoundException(String message) {
         super(message);
     }

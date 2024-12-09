@@ -1,6 +1,6 @@
 package exeptions;
 
-public class BadRequestException extends RuntimeException {
+public class BadRequestException extends ErrorException {
     public BadRequestException(String message) {
         super(message);
     }

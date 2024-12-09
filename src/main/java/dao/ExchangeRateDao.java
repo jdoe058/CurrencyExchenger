@@ -1,5 +1,7 @@
 package dao;
 
+import dto.ExchangeRateFilterDto;
+import exeptions.ErrorException;
 import models.Currency;
 import models.ExchangeRate;
 import util.ConnectionManager;
@@ -42,21 +44,23 @@ public class ExchangeRateDao {
     }
 
     //todo ExchangeRateFilterDto
-    public Optional<ExchangeRate> findByCodes(String baseCode, String targetCode) throws SQLException {
+    public Optional<ExchangeRate> findByCodes(ExchangeRateFilterDto filterDto) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODES_SQL)) {
-            preparedStatement.setString(1, baseCode);
-            preparedStatement.setString(2, targetCode);
+            preparedStatement.setString(1, filterDto.baseCode());
+            preparedStatement.setString(2, filterDto.targetCode());
             ResultSet resultSet = preparedStatement.executeQuery();
             ExchangeRate rate = null;
             if (resultSet.next()) {
                 rate = buildExchangeRate(resultSet);
             }
             return Optional.ofNullable(rate);
+        } catch (SQLException e) {
+            throw new ErrorException();
         }
     }
 
-    public List<ExchangeRate> findAll() throws SQLException {
+    public List<ExchangeRate> findAll() {
         List<ExchangeRate> rates = new ArrayList<>();
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
@@ -65,6 +69,8 @@ public class ExchangeRateDao {
                 rates.add(buildExchangeRate(resultSet));
             }
             return rates;
+        } catch (SQLException e) {
+            throw new ErrorException();
         }
     }
 
