@@ -12,24 +12,6 @@ public class CurrencyDao {
 
     private static final CurrencyDao INSTANCE = new CurrencyDao();
 
-    private static final String DELETE_SQL = """
-            DELETE FROM currencies
-            WHERE id = ?
-            """;
-
-    private static final String SAVE_SQL = """
-            INSERT INTO currencies (full_name, code, sign)
-            VALUES (?, ?, ?)
-            """;
-
-    private static final String UPDATE_SQL = """
-            UPDATE currencies
-            SET full_name = ?,
-                code = ?,
-                sign = ?
-            where id = ?
-            """;
-
     private static final String FIND_ALL_SQL = """
              SELECT id,
                 full_name,
@@ -38,18 +20,36 @@ public class CurrencyDao {
             FROM currencies
             """;
 
-    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + """
-            WHERE id = ?
-            """;
-
     private static final String FIND_BY_CODE_SQL = FIND_ALL_SQL + """
             WHERE code = ?
             """;
 
+//    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + """
+//            WHERE id = ?
+//            """;
+//
+//    private static final String DELETE_SQL = """
+//            DELETE FROM currencies
+//            WHERE id = ?
+//            """;
+//
+//    private static final String SAVE_SQL = """
+//            INSERT INTO currencies (full_name, code, sign)
+//            VALUES (?, ?, ?)
+//            """;
+//
+//    private static final String UPDATE_SQL = """
+//            UPDATE currencies
+//            SET full_name = ?,
+//                code = ?,
+//                sign = ?
+//            where id = ?
+//            """;
+
     private CurrencyDao() {
     }
 
-    public List<Currency> findAll() {
+    public List<Currency> findAll() throws SQLException {
         List<Currency> currencies = new ArrayList<>();
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
@@ -57,12 +57,11 @@ public class CurrencyDao {
             while (resultSet.next()) {
                 currencies.add(buildCurrency(resultSet));
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            return currencies;
         }
-        return currencies;
     }
 
+    //todo CurrencyFilterDto
     public Optional<Currency> findByCode(String code) throws SQLException {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE_SQL)) {
@@ -76,27 +75,61 @@ public class CurrencyDao {
         }
     }
 
-    public Optional<Currency> findById(Integer id) {
-        try (Connection connection = ConnectionManager.get()) {
-            return findById(id, connection);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    public Optional<Currency> findById(Integer id) throws SQLException {
+//        try (Connection connection = ConnectionManager.get()) {
+//            return findById(id, connection);
+//        }
+//    }
+//
+//    public Optional<Currency> findById(Integer id, Connection connection) throws SQLException {
+//        try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+//            preparedStatement.setInt(1, id);
+//            ResultSet resultSet = preparedStatement.executeQuery();
+//            Currency currency = null;
+//            if (resultSet.next()) {
+//                currency = buildCurrency(resultSet);
+//            }
+//            return Optional.ofNullable(currency);
+//        }
+//    }
+//
+//    public void update(Currency currency) throws SQLException {
+//        try (Connection connection = ConnectionManager.get();
+//             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
+//            preparedStatement.setString(1, currency.getFullName());
+//            preparedStatement.setString(2, currency.getCode());
+//            preparedStatement.setString(3, currency.getSign());
+//            preparedStatement.setInt(4, currency.getId());
+//            preparedStatement.executeUpdate();
+//        }
+//    }
+//
+//    public Currency save(Currency currency) throws SQLException {
+//        try (Connection connection = ConnectionManager.get();
+//             PreparedStatement preparedStatement = connection.prepareStatement(
+//                     SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+//            preparedStatement.setString(1, currency.getFullName());
+//            preparedStatement.setString(2, currency.getCode());
+//            preparedStatement.setString(3, currency.getSign());
+//            preparedStatement.executeUpdate();
+//            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+//            if (generatedKeys.next()) {
+//                currency.setId(generatedKeys.getInt("id"));
+//            }
+//            return currency;
+//        }
+//    }
+//
+//    public boolean delete(Integer id) throws SQLException {
+//        try (Connection connection = ConnectionManager.get();
+//             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_SQL)) {
+//            preparedStatement.setInt(1, id);
+//            return preparedStatement.executeUpdate() > 0;
+//        }
+//    }
 
-    public Optional<Currency> findById(Integer id, Connection connection) {
-        try (//Connection connection = ConnectionManager.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            Currency currency = null;
-            if (resultSet.next()) {
-                currency = buildCurrency(resultSet);
-            }
-            return Optional.ofNullable(currency);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public static CurrencyDao getInstance() {
+        return INSTANCE;
     }
 
     private Currency buildCurrency(ResultSet resultSet) throws SQLException {
@@ -106,50 +139,5 @@ public class CurrencyDao {
                 resultSet.getString("code"),
                 resultSet.getString("sign")
         );
-    }
-
-    public void update(Currency currency) {
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
-            preparedStatement.setString(1, currency.getFullName());
-            preparedStatement.setString(2, currency.getCode());
-            preparedStatement.setString(3, currency.getSign());
-            preparedStatement.setInt(4, currency.getId());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Currency save(Currency currency) {
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(
-                     SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
-            preparedStatement.setString(1, currency.getFullName());
-            preparedStatement.setString(2, currency.getCode());
-            preparedStatement.setString(3, currency.getSign());
-            preparedStatement.executeUpdate();
-            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                currency.setId(generatedKeys.getInt("id"));
-            }
-            return currency;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public boolean delete(Integer id) {
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_SQL)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static CurrencyDao getInstance() {
-        return INSTANCE;
     }
 }

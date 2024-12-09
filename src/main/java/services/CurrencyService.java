@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 public class CurrencyService {
@@ -20,6 +22,18 @@ public class CurrencyService {
 
     private CurrencyService() {
     }
+
+    public ResponseDto findAll() throws JsonProcessingException {
+        List<Currency> currencies;
+        try {
+            currencies = currencyDao.findAll();
+        } catch (SQLException e) {
+            return errorService.get(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, INTERNAL_MESSAGE);
+        }
+
+        return new ResponseDto(HttpServletResponse.SC_OK, objectMapper.writeValueAsString(currencies));
+    }
+
 
     public ResponseDto findByCode(String code) throws JsonProcessingException {
 
