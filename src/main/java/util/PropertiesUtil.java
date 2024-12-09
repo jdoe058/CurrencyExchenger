@@ -2,8 +2,7 @@ package util;
 
 import lombok.experimental.UtilityClass;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 
 @UtilityClass
@@ -20,11 +19,18 @@ public class PropertiesUtil {
     }
 
     private static void loadProperties() {
-        try (InputStream inputStream = PropertiesUtil.class.getClassLoader()
-                .getResourceAsStream("application.properties")) {
-            PROPERTIES.load(inputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try (InputStream inputStream = PropertiesUtil.class.getClassLoader()
+//                .getResourceAsStream("application.properties")) {
+//            PROPERTIES.load(inputStream);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+        // Получение переменных окружения и добавление тех, что начинаются с "db."
+        Map<String, String> env = System.getenv();
+        env.forEach((key, value) -> {
+            if (key.startsWith("db.")) {
+                PROPERTIES.setProperty(key, value);
+            }
+        });
     }
 }
