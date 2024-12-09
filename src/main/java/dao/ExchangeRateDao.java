@@ -89,6 +89,10 @@ public class ExchangeRateDao implements Dao<Integer, ExchangeRate> {
         return rates;
     }
 
+    public Optional<ExchangeRate> findByCode(String baseCode, String targetCode) {
+        return Optional.empty();
+    }
+
     private ExchangeRate buildExchangeRate(ResultSet resultSet) throws SQLException {
         Connection connection = resultSet.getStatement().getConnection();
         return new ExchangeRate(
