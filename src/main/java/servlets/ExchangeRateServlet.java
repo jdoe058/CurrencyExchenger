@@ -18,6 +18,6 @@ public class ExchangeRateServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ResponseDto responseDto = service.findByCode(req.getPathInfo());
         resp.setStatus(responseDto.status());
-        resp.getWriter().write(responseDto.message());
+        resp.getWriter().write(responseDto.body());
     }
 }

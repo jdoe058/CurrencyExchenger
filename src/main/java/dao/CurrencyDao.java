@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CurrencyDao implements Dao<Integer, Currency> {
+public class CurrencyDao {
 
     private static final CurrencyDao INSTANCE = new CurrencyDao();
 

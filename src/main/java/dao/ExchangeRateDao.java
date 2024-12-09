@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ExchangeRateDao implements Dao<Integer, ExchangeRate> {
+public class ExchangeRateDao {
 
     private static final ExchangeRateDao INSTANCE = new ExchangeRateDao();
 
@@ -34,58 +34,11 @@ public class ExchangeRateDao implements Dao<Integer, ExchangeRate> {
                 ON target_currency_id = target.id
             """;
 
-    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + """
-            WHERE id = ?
-            """;
-
     private static final String FIND_BY_CODES_SQL = FIND_ALL_SQL + """
             WHERE base.code = ? AND target.code = ?
             """;
 
-    private static final CurrencyDao currencyDao = CurrencyDao.getInstance();
-
     private ExchangeRateDao() {
-    }
-
-    public static ExchangeRateDao getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public boolean delete(Integer id) {
-        return false;
-    }
-
-    @Override
-    public ExchangeRate save(ExchangeRate exchangeRate) {
-        return null;
-    }
-
-    @Override
-    public void update(ExchangeRate exchangeRate) {
-
-    }
-
-    public Optional<ExchangeRate> findById(Integer id) {
-        try (Connection connection = ConnectionManager.get()) {
-            return findById(id, connection);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Optional<ExchangeRate> findById(Integer id, Connection connection) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            ExchangeRate rate = null;
-            if (resultSet.next()) {
-                rate = buildExchangeRate(resultSet);
-            }
-            return Optional.ofNullable(rate);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public Optional<ExchangeRate> findByCodes(String baseCode, String targetCode) throws SQLException {
@@ -95,14 +48,13 @@ public class ExchangeRateDao implements Dao<Integer, ExchangeRate> {
             preparedStatement.setString(2, targetCode);
             ResultSet resultSet = preparedStatement.executeQuery();
             ExchangeRate rate = null;
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 rate = buildExchangeRate(resultSet);
             }
             return Optional.ofNullable(rate);
         }
     }
 
-    @Override
     public List<ExchangeRate> findAll() {
         List<ExchangeRate> rates = new ArrayList<>();
         try (Connection connection = ConnectionManager.get();
@@ -115,6 +67,10 @@ public class ExchangeRateDao implements Dao<Integer, ExchangeRate> {
             throw new RuntimeException(e);
         }
         return rates;
+    }
+
+    public static ExchangeRateDao getInstance() {
+        return INSTANCE;
     }
 
     private ExchangeRate buildExchangeRate(ResultSet resultSet) throws SQLException {
