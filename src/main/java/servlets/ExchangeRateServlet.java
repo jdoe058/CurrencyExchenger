@@ -30,8 +30,7 @@ public class ExchangeRateServlet extends HttpServlet {
     }
 
     private Optional<ExchangeRateFilterDto> getCurrencyCodesFromPath(String path) {
-        //todo regex
-        if (path == null || path.length() != 7) {
+        if (path == null || !path.matches("^/[A-Za-z]{6}$")) {
             return Optional.empty();
         }
         String baseCode = path.substring(1, 4).toUpperCase();

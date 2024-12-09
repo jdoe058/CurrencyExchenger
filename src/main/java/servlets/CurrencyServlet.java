@@ -29,8 +29,7 @@ public class CurrencyServlet extends HttpServlet {
     }
 
     private Optional<String> getCurrencyCodeFromPath(String path) {
-        //todo regex
-        if (path == null || path.length() != 4) {
+        if (path == null || !path.matches("^/[A-Za-z]{3}$")) {
             return Optional.empty();
         }
         return Optional.of(path.substring(1).toUpperCase());
