@@ -28,7 +28,7 @@ public class ExchangeRateService {
             return errorService.get(HttpServletResponse.SC_BAD_REQUEST, BAD_REQUEST_MESSAGE);
         }
 
-        Optional<ExchangeRate> rate = Optional.empty();
+        Optional<ExchangeRate> rate;
         String baseCode = code.substring(1, 4).toUpperCase();
         String targetCode = code.substring(4).toUpperCase();
 
