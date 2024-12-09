@@ -7,6 +7,7 @@ import dto.ResponseDto;
 import jakarta.servlet.http.HttpServletResponse;
 import models.ExchangeRate;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ExchangeRateService {
@@ -43,6 +44,18 @@ public class ExchangeRateService {
         }
 
         return new ResponseDto(HttpServletResponse.SC_OK, objectMapper.writeValueAsString(rate.get()));
+    }
+
+    public ResponseDto findAll() throws JsonProcessingException {
+        List<ExchangeRate> rates;
+
+        try {
+            rates = exchangeRateDao.findAll();
+        } catch (Exception e) {
+            return errorService.get(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, INTERNAL_MESSAGE);
+        }
+
+        return new ResponseDto(HttpServletResponse.SC_OK, objectMapper.writeValueAsString(rates));
     }
 
     public static ExchangeRateService getInstance() {

@@ -41,6 +41,7 @@ public class ExchangeRateDao {
     private ExchangeRateDao() {
     }
 
+    //todo ExchangeRateFilterDto
     public Optional<ExchangeRate> findByCodes(String baseCode, String targetCode) throws SQLException {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODES_SQL)) {
@@ -55,7 +56,7 @@ public class ExchangeRateDao {
         }
     }
 
-    public List<ExchangeRate> findAll() {
+    public List<ExchangeRate> findAll() throws SQLException {
         List<ExchangeRate> rates = new ArrayList<>();
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
@@ -63,10 +64,8 @@ public class ExchangeRateDao {
             while (resultSet.next()) {
                 rates.add(buildExchangeRate(resultSet));
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            return rates;
         }
-        return rates;
     }
 
     public static ExchangeRateDao getInstance() {
