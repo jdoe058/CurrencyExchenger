@@ -1,6 +1,6 @@
 -- for pgAdmin
-DROP TABLE exchange_rates;
-DROP TABLE currencies;
+--DROP TABLE exchange_rates;
+--DROP TABLE currencies;
 --
 CREATE TABLE currencies(
     id SERIAL PRIMARY KEY,
