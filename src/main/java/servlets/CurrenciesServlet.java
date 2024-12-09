@@ -1,23 +1,27 @@
 package servlets;
 
-import dto.ResponseDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dao.CurrencyDao;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import services.CurrencyService;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
 
-    private static final CurrencyService service = CurrencyService.getInstance();
+    private final CurrencyDao currencyDao = CurrencyDao.getInstance();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        ResponseDto responseDto = service.findAll();
-        resp.setStatus(responseDto.status());
-        resp.getWriter().write(responseDto.body());
+        try {
+            mapper.writeValue(resp.getWriter(), currencyDao.findAll());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
