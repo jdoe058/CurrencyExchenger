@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.ExchangeRateDao;
 import exceptions.ExchangeRateMissingFieldException;
 import exceptions.RestException;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +26,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ExchangeRate preparedRate = getExchangeRateFromRequest(req)
                 .orElseThrow(ExchangeRateMissingFieldException::new);
         ExchangeRate rate = dao.save(preparedRate).orElseThrow(RestException::new);

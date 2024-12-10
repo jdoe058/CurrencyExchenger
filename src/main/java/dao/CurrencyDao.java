@@ -47,6 +47,10 @@ public class CurrencyDao {
         }
     }
 
+    public List<Currency> find(String code, Connection connection) throws SQLException {
+        return find(List.of(code), connection);
+    }
+
     public List<Currency> find(List<String> codes, Connection connection) throws SQLException {
         List<Object> parameters = new ArrayList<>();
         StringBuilder sql = new StringBuilder(FIND_ALL_SQL);
@@ -68,7 +72,7 @@ public class CurrencyDao {
 
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                currencies.add(buildCurrency(resultSet));
+                currencies.add(Currency.fromResultSetWithPrefix(resultSet, ""));
             }
         }
         return currencies;
@@ -103,18 +107,9 @@ public class CurrencyDao {
         try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQL);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                currencies.add(buildCurrency(resultSet));
+                currencies.add(Currency.fromResultSetWithPrefix(resultSet, ""));
             }
         }
         return currencies;
-    }
-
-    private Currency buildCurrency(ResultSet resultSet) throws SQLException {
-        return Currency.builder()
-                .id(resultSet.getInt("id"))
-                .fullName(resultSet.getString("full_name"))
-                .code(resultSet.getString("code"))
-                .sign(resultSet.getString("sign"))
-                .build();
     }
 }
