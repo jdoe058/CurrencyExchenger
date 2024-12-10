@@ -28,6 +28,7 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Currency currency = getInputParameters(req).orElseThrow(CurrencyMissingFieldException::new);
         Currency newCurrency = dao.save(currency).orElseThrow(RestException::new);
+        resp.setStatus(HttpServletResponse.SC_CREATED);
         mapper.writeValue(resp.getWriter(), newCurrency);
     }
 
