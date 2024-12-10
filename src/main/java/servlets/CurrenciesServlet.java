@@ -1,20 +1,17 @@
 package servlets;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDao;
+import models.Currency;
 import exceptions.CurrencyNotFormFieldException;
 import exceptions.ErrorException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import models.Currency;
-
-import java.io.IOException;
-
-import java.util.Map;
 import java.util.Optional;
+import java.io.IOException;
 
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
@@ -29,8 +26,6 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Map<String, String[]> parameterMap = req.getParameterMap();
-        System.out.println();
         Currency currency = getInputParameters(req).orElseThrow(CurrencyNotFormFieldException::new);
         Currency newCurrency = dao.save(currency).orElseThrow(ErrorException::new);
         mapper.writeValue(resp.getWriter(), newCurrency);
