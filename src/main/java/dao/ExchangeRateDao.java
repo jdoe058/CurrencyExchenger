@@ -1,7 +1,7 @@
 package dao;
 
 import dto.ExchangeRateFilterDto;
-import exceptions.ErrorException;
+import exceptions.RestException;
 import models.Currency;
 import models.ExchangeRate;
 import utilities.ConnectionManager;
@@ -56,7 +56,7 @@ public class ExchangeRateDao {
             }
             return Optional.ofNullable(rate);
         } catch (SQLException e) {
-            throw new ErrorException();
+            throw new RestException();
         }
     }
 
@@ -70,7 +70,7 @@ public class ExchangeRateDao {
             }
             return rates;
         } catch (SQLException e) {
-            throw new ErrorException();
+            throw new RestException();
         }
     }
 

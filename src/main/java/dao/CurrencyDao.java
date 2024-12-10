@@ -1,7 +1,7 @@
 package dao;
 
 import exceptions.CurrencyAlreadyExistsException;
-import exceptions.ErrorException;
+import exceptions.RestException;
 import models.Currency;
 import utilities.ConnectionManager;
 
@@ -43,7 +43,7 @@ public class CurrencyDao {
             }
             return currencies;
         } catch (SQLException e) {
-            throw new ErrorException();
+            throw new RestException();
         }
     }
 
@@ -58,7 +58,7 @@ public class CurrencyDao {
             }
             return Optional.ofNullable(currency);
         } catch (SQLException e) {
-            throw new ErrorException();
+            throw new RestException();
         }
     }
 
@@ -84,7 +84,7 @@ public class CurrencyDao {
             if (e.getSQLState().equals(POSTGRES_UNIQUE_CONSTRAINT_VIOLATED)) {
                 throw new CurrencyAlreadyExistsException();
             }
-            throw new ErrorException();
+            throw new RestException();
         }
     }
 

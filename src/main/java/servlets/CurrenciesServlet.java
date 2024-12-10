@@ -2,8 +2,8 @@ package servlets;
 
 import dao.CurrencyDao;
 import models.Currency;
-import exceptions.CurrencyNotFormFieldException;
-import exceptions.ErrorException;
+import exceptions.CurrencyMissingFieldException;
+import exceptions.RestException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,8 +26,8 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Currency currency = getInputParameters(req).orElseThrow(CurrencyNotFormFieldException::new);
-        Currency newCurrency = dao.save(currency).orElseThrow(ErrorException::new);
+        Currency currency = getInputParameters(req).orElseThrow(CurrencyMissingFieldException::new);
+        Currency newCurrency = dao.save(currency).orElseThrow(RestException::new);
         mapper.writeValue(resp.getWriter(), newCurrency);
     }
 

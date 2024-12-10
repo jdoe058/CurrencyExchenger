@@ -3,7 +3,7 @@ package servlets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.ExchangeRateDao;
 import dto.ExchangeRateFilterDto;
-import exceptions.ExchangeRateBadRequestException;
+import exceptions.ExchangeRateMissingCodesException;
 import exceptions.ExchangeRateNotFoundException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,7 +23,7 @@ public class ExchangeRateServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         var currencyCodes = getCurrencyCodesFromPath(req.getPathInfo())
-                .orElseThrow(ExchangeRateBadRequestException::new);
+                .orElseThrow(ExchangeRateMissingCodesException::new);
         var rate = dao.findByCodes(currencyCodes)
                 .orElseThrow(ExchangeRateNotFoundException::new);
         mapper.writeValue(resp.getWriter(), rate);

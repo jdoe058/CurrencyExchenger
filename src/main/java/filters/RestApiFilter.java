@@ -1,16 +1,13 @@
 package filters;
 
-import exceptions.BadRequestException;
-import exceptions.CurrencyAlreadyExistsException;
-import exceptions.ErrorException;
-import exceptions.NotFoundException;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import exceptions.RestException;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 
 @WebFilter({
         "/currencies",
@@ -42,18 +39,9 @@ public class RestApiFilter implements Filter {
 
         try {
             filterChain.doFilter(servletRequest, servletResponse);
-        } catch (CurrencyAlreadyExistsException e) {
-            httpResponse.setStatus(HttpServletResponse.SC_CONFLICT);
-            httpResponse.getWriter().write(e.jsonMessage());
-        } catch (BadRequestException e) {
-            httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            httpResponse.getWriter().write(e.jsonMessage());
-        } catch (NotFoundException e) {
-            httpResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            httpResponse.getWriter().write(e.jsonMessage());
-        } catch (ErrorException e) {
-            httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            httpResponse.getWriter().write(e.jsonMessage());
+        } catch (RestException e) {
+            httpResponse.setStatus(e.getResponseMessageStatus());
+            httpResponse.getWriter().write(e.getResponseMessageBody());
         }
     }
 }
