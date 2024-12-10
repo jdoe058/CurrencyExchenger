@@ -101,4 +101,8 @@ public class ExchangeRateDao {
                 .rate(resultSet.getBigDecimal("rate"))
                 .build();
     }
+
+    public Optional<ExchangeRate> save(ExchangeRate preparedRate) {
+        return null;
+    }
 }

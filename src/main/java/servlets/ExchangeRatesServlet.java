@@ -2,12 +2,19 @@ package servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.ExchangeRateDao;
+import exceptions.ExchangeRateMissingFieldException;
+import exceptions.RestException;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import models.Currency;
+import models.ExchangeRate;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
@@ -17,5 +24,29 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         mapper.writeValue(resp.getWriter(), dao.findAll());
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        ExchangeRate preparedRate = getExchangeRateFromRequest(req)
+                .orElseThrow(ExchangeRateMissingFieldException::new);
+        ExchangeRate rate = dao.save(preparedRate).orElseThrow(RestException::new);
+        resp.setStatus(HttpServletResponse.SC_CREATED);
+        mapper.writeValue(resp.getWriter(), rate);
+    }
+
+    private Optional<ExchangeRate> getExchangeRateFromRequest(HttpServletRequest req) {
+        String baseCurrencyCode = req.getParameter("baseCurrencyCode");
+        String targetCurrencyCode = req.getParameter("targetCurrencyCode");
+        String rate = req.getParameter("rate");
+        if (baseCurrencyCode == null || targetCurrencyCode == null || rate == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(ExchangeRate.builder()
+                .baseCurrency(Currency.builder().code(baseCurrencyCode).build())
+                .targetCurrency(Currency.builder().code(targetCurrencyCode).build())
+                .rate(BigDecimal.valueOf(Double.parseDouble(rate)))
+                .build());
     }
 }

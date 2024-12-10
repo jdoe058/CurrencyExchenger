@@ -14,6 +14,8 @@ import java.util.concurrent.BlockingQueue;
 @UtilityClass
 public class ConnectionManager {
 
+    public static final String POSTGRES_UNIQUE_CONSTRAINT_VIOLATED = "23505";
+
     private static final int DEFAULT_POOL_SIZE = 10;
     private static final String URL_KEY = "db.url";
     private static final String USERNAME_KEY = "db.username";

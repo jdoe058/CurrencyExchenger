@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.List;
 import java.util.Optional;
 import java.io.IOException;
 
@@ -21,15 +22,15 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        mapper.writeValue(resp.getWriter(), dao.findAll());
+        mapper.writeValue(resp.getWriter(), dao.find(List.of()));
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Currency currency = getInputParameters(req).orElseThrow(CurrencyMissingFieldException::new);
-        Currency newCurrency = dao.save(currency).orElseThrow(RestException::new);
+        Currency preparedCurrency = getInputParameters(req).orElseThrow(CurrencyMissingFieldException::new);
+        Currency currency = dao.save(preparedCurrency).orElseThrow(RestException::new);
         resp.setStatus(HttpServletResponse.SC_CREATED);
-        mapper.writeValue(resp.getWriter(), newCurrency);
+        mapper.writeValue(resp.getWriter(), currency);
     }
 
     private Optional<Currency> getInputParameters(HttpServletRequest req) {

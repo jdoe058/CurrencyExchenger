@@ -2,6 +2,8 @@ package exceptions;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.sql.SQLException;
+
 public class RestException extends RuntimeException {
 
     private static final String DEFAULT_MESSAGE = "Ошибка (например, база данных недоступна)";
@@ -12,6 +14,10 @@ public class RestException extends RuntimeException {
 
     public RestException(String message) {
         super(message);
+    }
+
+    public RestException(String s, SQLException e) {
+        super(s, e);
     }
 
     public int getResponseMessageStatus() {

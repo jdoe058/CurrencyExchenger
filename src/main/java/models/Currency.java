@@ -12,6 +12,11 @@ public class Currency {
     String fullName;
     String code;
     String sign;
+
+    public Currency withId(int id) {
+        return Currency.builder().id(id)
+                .fullName(fullName).code(code).sign(sign).build();
+    }
 }
 
 
