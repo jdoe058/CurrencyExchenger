@@ -1,4 +1,4 @@
-package exeptions;
+package exceptions;
 
 public class ExchangeRateNotFoundException extends NotFoundException {
     public ExchangeRateNotFoundException() {

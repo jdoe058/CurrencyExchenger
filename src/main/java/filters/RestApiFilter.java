@@ -1,8 +1,8 @@
 package filters;
 
-import exeptions.BadRequestException;
-import exeptions.ErrorException;
-import exeptions.NotFoundException;
+import exceptions.BadRequestException;
+import exceptions.ErrorException;
+import exceptions.NotFoundException;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;

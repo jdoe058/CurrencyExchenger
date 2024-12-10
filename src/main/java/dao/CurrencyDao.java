@@ -1,6 +1,6 @@
 package dao;
 
-import exeptions.ErrorException;
+import exceptions.ErrorException;
 import models.Currency;
 import util.ConnectionManager;
 
@@ -25,27 +25,10 @@ public class CurrencyDao {
             WHERE code = ?
             """;
 
-//    private static final String FIND_BY_ID_SQL = FIND_ALL_SQL + """
-//            WHERE id = ?
-//            """;
-//
-//    private static final String DELETE_SQL = """
-//            DELETE FROM currencies
-//            WHERE id = ?
-//            """;
-//
-//    private static final String SAVE_SQL = """
-//            INSERT INTO currencies (full_name, code, sign)
-//            VALUES (?, ?, ?)
-//            """;
-//
-//    private static final String UPDATE_SQL = """
-//            UPDATE currencies
-//            SET full_name = ?,
-//                code = ?,
-//                sign = ?
-//            where id = ?
-//            """;
+    private static final String SAVE_SQL = """
+            INSERT INTO currencies (full_name, code, sign)
+            VALUES (?, ?, ?)
+            """;
 
     private CurrencyDao() {
     }
@@ -64,7 +47,6 @@ public class CurrencyDao {
         }
     }
 
-    //todo CurrencyFilterDto
     public Optional<Currency> findByCode(String code) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE_SQL)) {
@@ -80,69 +62,38 @@ public class CurrencyDao {
         }
     }
 
-//    public Optional<Currency> findById(Integer id) throws SQLException {
-//        try (Connection connection = ConnectionManager.get()) {
-//            return findById(id, connection);
-//        }
-//    }
-//
-//    public Optional<Currency> findById(Integer id, Connection connection) throws SQLException {
-//        try (PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
-//            preparedStatement.setInt(1, id);
-//            ResultSet resultSet = preparedStatement.executeQuery();
-//            Currency currency = null;
-//            if (resultSet.next()) {
-//                currency = buildCurrency(resultSet);
-//            }
-//            return Optional.ofNullable(currency);
-//        }
-//    }
-//
-//    public void update(Currency currency) throws SQLException {
-//        try (Connection connection = ConnectionManager.get();
-//             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
-//            preparedStatement.setString(1, currency.getFullName());
-//            preparedStatement.setString(2, currency.getCode());
-//            preparedStatement.setString(3, currency.getSign());
-//            preparedStatement.setInt(4, currency.getId());
-//            preparedStatement.executeUpdate();
-//        }
-//    }
-//
-//    public Currency save(Currency currency) throws SQLException {
-//        try (Connection connection = ConnectionManager.get();
-//             PreparedStatement preparedStatement = connection.prepareStatement(
-//                     SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
-//            preparedStatement.setString(1, currency.getFullName());
-//            preparedStatement.setString(2, currency.getCode());
-//            preparedStatement.setString(3, currency.getSign());
-//            preparedStatement.executeUpdate();
-//            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-//            if (generatedKeys.next()) {
-//                currency.setId(generatedKeys.getInt("id"));
-//            }
-//            return currency;
-//        }
-//    }
-//
-//    public boolean delete(Integer id) throws SQLException {
-//        try (Connection connection = ConnectionManager.get();
-//             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_SQL)) {
-//            preparedStatement.setInt(1, id);
-//            return preparedStatement.executeUpdate() > 0;
-//        }
-//    }
+    public Optional<Currency> save(Currency currency) throws SQLException {
+        try (Connection connection = ConnectionManager.get();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+            preparedStatement.setString(1, currency.getFullName());
+            preparedStatement.setString(2, currency.getCode());
+            preparedStatement.setString(3, currency.getSign());
+            preparedStatement.executeUpdate();
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                //currency.setId(generatedKeys.getInt("id"));
+                return Optional.of(Currency.builder()
+                        .id(generatedKeys.getInt("id"))
+                        .fullName(currency.getFullName())
+                        .code(currency.getCode())
+                        .sign(currency.getSign())
+                        .build());
+            }
+            return Optional.empty();
+        }
+    }
 
     public static CurrencyDao getInstance() {
         return INSTANCE;
     }
 
     private Currency buildCurrency(ResultSet resultSet) throws SQLException {
-        return new Currency(
-                resultSet.getInt("id"),
-                resultSet.getString("full_name"),
-                resultSet.getString("code"),
-                resultSet.getString("sign")
-        );
+        return Currency.builder()
+                .id(resultSet.getInt("id"))
+                .fullName(resultSet.getString("full_name"))
+                .code(resultSet.getString("code"))
+                .sign(resultSet.getString("sign"))
+                .build();
     }
 }

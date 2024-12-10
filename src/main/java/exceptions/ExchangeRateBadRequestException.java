@@ -1,4 +1,4 @@
-package exeptions;
+package exceptions;
 
 public class ExchangeRateBadRequestException extends BadRequestException {
     public ExchangeRateBadRequestException() {

@@ -1,16 +1,14 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
 
 import java.math.BigDecimal;
 
-@AllArgsConstructor
-@Data
-@JsonPropertyOrder({"id", "baseCurrency", "targetCurrency", "rate"})
+@Value
+@Builder
 public class ExchangeRate {
-    private int id;
-    private Currency baseCurrency;
-    private Currency targetCurrency;
-    private BigDecimal rate;
+    int id;
+    Currency baseCurrency;
+    Currency targetCurrency;
+    BigDecimal rate;
 }

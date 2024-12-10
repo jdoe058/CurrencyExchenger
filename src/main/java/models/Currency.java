@@ -1,18 +1,17 @@
 package models;
 
+import lombok.Builder;
+import lombok.Value;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.*;
 
-@Data
-@AllArgsConstructor
-@JsonPropertyOrder({"id", "name", "code", "sign"})
+@Value
+@Builder
 public class Currency {
-    private int id;
+    int id;
     @JsonProperty("name")
-    private String fullName;
-    private String code;
-    private String sign;
+    String fullName;
+    String code;
+    String sign;
 }
 
 

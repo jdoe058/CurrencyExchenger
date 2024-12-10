@@ -1,7 +1,7 @@
 package dao;
 
 import dto.ExchangeRateFilterDto;
-import exeptions.ErrorException;
+import exceptions.ErrorException;
 import models.Currency;
 import models.ExchangeRate;
 import util.ConnectionManager;
@@ -80,23 +80,25 @@ public class ExchangeRateDao {
 
     private ExchangeRate buildExchangeRate(ResultSet resultSet) throws SQLException {
 
-        Currency baseCurrency = new Currency(
-                resultSet.getInt("base_currency_id"),
-                resultSet.getString("base_full_name"),
-                resultSet.getString("base_code"),
-                resultSet.getString("base_sign"));
+        Currency baseCurrency = Currency.builder()
+                .id(resultSet.getInt("base_currency_id"))
+                .fullName(resultSet.getString("base_full_name"))
+                .code(resultSet.getString("base_code"))
+                .sign(resultSet.getString("base_sign"))
+                .build();
 
-        Currency targetCurrency = new Currency(
-                resultSet.getInt("target_currency_id"),
-                resultSet.getString("target_full_name"),
-                resultSet.getString("target_code"),
-                resultSet.getString("target_sign"));
+        Currency targetCurrency = Currency.builder()
+                .id(resultSet.getInt("target_currency_id"))
+                .fullName(resultSet.getString("target_full_name"))
+                .code(resultSet.getString("target_code"))
+                .sign(resultSet.getString("target_sign"))
+                .build();
 
-        return new ExchangeRate(
-                resultSet.getInt("id"),
-                baseCurrency,
-                targetCurrency,
-                resultSet.getBigDecimal("rate")
-        );
+        return ExchangeRate.builder()
+                .id(resultSet.getInt("id"))
+                .baseCurrency(baseCurrency)
+                .targetCurrency(targetCurrency)
+                .rate(resultSet.getBigDecimal("rate"))
+                .build();
     }
 }
