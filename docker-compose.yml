@@ -19,9 +19,9 @@ services:
     depends_on:
       - postgres
     environment:
-      DATABASE_URL: "jdbc:postgresql://postgres:5432/postgres"
-      DATABASE_USER: "postgres"
-      DATABASE_PASSWORD: "pgpwd4habr"
+      DB.URL: "jdbc:postgresql://postgres:5432/postgres"
+      DB.USERNAME: "postgres"
+      DB.PASSWORD: "pgpwd4habr"
 
 volumes:
   pg_data:

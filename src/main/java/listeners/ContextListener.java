@@ -3,7 +3,7 @@ package listeners;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-import util.ConnectionManager;
+import utilities.ConnectionManager;
 
 @WebListener
 public class ContextListener implements ServletContextListener {

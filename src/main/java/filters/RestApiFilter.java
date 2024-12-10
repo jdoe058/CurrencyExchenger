@@ -1,6 +1,7 @@
 package filters;
 
 import exceptions.BadRequestException;
+import exceptions.CurrencyAlreadyExistsException;
 import exceptions.ErrorException;
 import exceptions.NotFoundException;
 import jakarta.servlet.*;
@@ -41,6 +42,9 @@ public class RestApiFilter implements Filter {
 
         try {
             filterChain.doFilter(servletRequest, servletResponse);
+        } catch (CurrencyAlreadyExistsException e) {
+            httpResponse.setStatus(HttpServletResponse.SC_CONFLICT);
+            httpResponse.getWriter().write(e.jsonMessage());
         } catch (BadRequestException e) {
             httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             httpResponse.getWriter().write(e.jsonMessage());

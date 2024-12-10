@@ -1,4 +1,4 @@
-package util;
+package utilities;
 
 import lombok.experimental.UtilityClass;
 
@@ -25,7 +25,7 @@ public class PropertiesUtil {
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
-        // Получение переменных окружения и добавление тех, что начинаются с "db."
+//         Получение переменных окружения и добавление тех, что начинаются с "db."
         Map<String, String> env = System.getenv();
         env.forEach((key, value) -> {
             if (key.startsWith("db.")) {

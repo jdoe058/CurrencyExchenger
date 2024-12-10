@@ -1,8 +1,9 @@
 package dao;
 
+import exceptions.CurrencyAlreadyExistsException;
 import exceptions.ErrorException;
 import models.Currency;
-import util.ConnectionManager;
+import utilities.ConnectionManager;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.Optional;
 
 public class CurrencyDao {
 
-    private static final CurrencyDao INSTANCE = new CurrencyDao();
+    public static final String POSTGRES_UNIQUE_CONSTRAINT_VIOLATED = "23505";
 
     private static final String FIND_ALL_SQL = """
              SELECT id,
@@ -20,15 +21,14 @@ public class CurrencyDao {
                 sign
             FROM currencies
             """;
-
     private static final String FIND_BY_CODE_SQL = FIND_ALL_SQL + """
             WHERE code = ?
             """;
-
     private static final String SAVE_SQL = """
             INSERT INTO currencies (full_name, code, sign)
             VALUES (?, ?, ?)
             """;
+    private static final CurrencyDao INSTANCE = new CurrencyDao();
 
     private CurrencyDao() {
     }
@@ -62,7 +62,7 @@ public class CurrencyDao {
         }
     }
 
-    public Optional<Currency> save(Currency currency) throws SQLException {
+    public Optional<Currency> save(Currency currency) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
@@ -72,7 +72,6 @@ public class CurrencyDao {
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                //currency.setId(generatedKeys.getInt("id"));
                 return Optional.of(Currency.builder()
                         .id(generatedKeys.getInt("id"))
                         .fullName(currency.getFullName())
@@ -81,6 +80,11 @@ public class CurrencyDao {
                         .build());
             }
             return Optional.empty();
+        } catch (SQLException e) {
+            if (e.getSQLState().equals(POSTGRES_UNIQUE_CONSTRAINT_VIOLATED)) {
+                throw new CurrencyAlreadyExistsException();
+            }
+            throw new ErrorException();
         }
     }
 

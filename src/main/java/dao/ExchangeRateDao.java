@@ -4,7 +4,7 @@ import dto.ExchangeRateFilterDto;
 import exceptions.ErrorException;
 import models.Currency;
 import models.ExchangeRate;
-import util.ConnectionManager;
+import utilities.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
