@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import models.Currency;
+import models.CurrencyCode;
 import models.ExchangeRate;
 
 import java.io.IOException;
@@ -35,10 +36,11 @@ public class ExchangeRatesServlet extends HttpServlet {
     }
 
     private Optional<ExchangeRate> getExchangeRateFromRequest(HttpServletRequest req) {
-        String baseCurrencyCode = req.getParameter("baseCurrencyCode");
-        String targetCurrencyCode = req.getParameter("targetCurrencyCode");
+        CurrencyCode baseCurrencyCode = CurrencyCode.of(req.getParameter("baseCurrencyCode"));
+        CurrencyCode targetCurrencyCode = CurrencyCode.of(req.getParameter("targetCurrencyCode"));
         String rate = req.getParameter("rate");
-        if (baseCurrencyCode == null || targetCurrencyCode == null || rate == null) {
+
+        if (rate == null) {
             return Optional.empty();
         }
 

@@ -13,14 +13,18 @@ public class Currency {
     int id;
     @JsonProperty("name")
     String fullName;
-    String code;
+    CurrencyCode code;
     String sign;
+
+    public String getCode() {
+        return code.getCode();
+    }
 
     public static Currency fromResultSetWithPrefix (ResultSet resultSet, String prefix) throws SQLException {
         return Currency.builder()
                 .id(resultSet.getInt(prefix + "id"))
                 .fullName(resultSet.getString(prefix + "full_name"))
-                .code(resultSet.getString(prefix + "code"))
+                .code(CurrencyCode.of(resultSet.getString(prefix + "code")))
                 .sign(resultSet.getString(prefix + "sign"))
                 .build();
     }

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import models.CurrencyCode;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,11 +36,11 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
     private Optional<Currency> getInputParameters(HttpServletRequest req) {
+        CurrencyCode code = CurrencyCode.of("code");
         String name = req.getParameter("name");
-        String code = req.getParameter("code");
         String sign = req.getParameter("sign");
 
-        if (name == null || code == null || sign == null) {
+        if (name == null || sign == null) {
             return Optional.empty();
         }
 
