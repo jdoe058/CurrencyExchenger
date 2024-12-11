@@ -1,9 +1,8 @@
 package servlets;
 
 import dao.CurrencyDao;
+import exceptions.RestBadRequestException;
 import models.Currency;
-import exceptions.CurrencyMissingFieldException;
-import exceptions.RestException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +16,7 @@ import java.io.IOException;
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
 
+    private static final String CURRENCY_PARAMETER_MISSED_MESSAGE = "Отсутствует нужное поле формы";
     private final CurrencyDao dao = CurrencyDao.getInstance();
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -27,8 +27,9 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Currency preparedCurrency = getInputParameters(req).orElseThrow(CurrencyMissingFieldException::new);
-        Currency currency = dao.save(preparedCurrency).orElseThrow(RestException::new);
+        Currency preparedCurrency = getInputParameters(req).orElseThrow(
+                () -> new RestBadRequestException(CURRENCY_PARAMETER_MISSED_MESSAGE));
+        Currency currency = dao.save(preparedCurrency).getFirst();
         resp.setStatus(HttpServletResponse.SC_CREATED);
         mapper.writeValue(resp.getWriter(), currency);
     }

@@ -2,7 +2,7 @@ package servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDao;
-import exceptions.CurrencyMissingCodeException;
+import exceptions.RestBadRequestException;
 import exceptions.RestNotFoundException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,6 +16,7 @@ import java.util.Optional;
 @WebServlet("/currency/*")
 public class CurrencyServlet extends HttpServlet {
     private static final String CURRENCY_NOT_FOUND_MESSAGE = "Валюта не найдена";
+    private static final String CURRENCY_CODE_MISSED_MESSAGE = "Код валюты отсутствует в адресе";
     private static final CurrencyDao dao = CurrencyDao.getInstance();
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -23,8 +24,9 @@ public class CurrencyServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-        var currencyCode = getCurrencyCodeFromPath(req.getPathInfo())
-                .orElseThrow(CurrencyMissingCodeException::new);
+        var currencyCode = getCurrencyCodeFromPath(req.getPathInfo()).orElseThrow(
+                () -> new RestBadRequestException(CURRENCY_CODE_MISSED_MESSAGE));
+
         var currency = dao.find(List.of(currencyCode));
         if (currency.isEmpty()) {
             throw new RestNotFoundException(CURRENCY_NOT_FOUND_MESSAGE);

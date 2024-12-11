@@ -9,7 +9,6 @@ import utilities.ConnectionManager;
 
 import java.sql.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.ArrayList;
 import java.util.StringJoiner;
 
@@ -78,7 +77,7 @@ public class CurrencyDao {
         return currencies;
     }
 
-    public Optional<Currency> save(Currency currency) {
+    public List<Currency> save(Currency currency) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
@@ -88,12 +87,12 @@ public class CurrencyDao {
             preparedStatement.setString(3, currency.getSign());
             preparedStatement.executeUpdate();
 
+            List<Currency> list = new ArrayList<>();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                return Optional.of(currency.withId(generatedKeys.getInt("id")));
+                list.add(currency.withId(generatedKeys.getInt("id")));
             }
-
-            return Optional.empty();
+            return list;
         } catch (SQLException e) {
             if (e.getSQLState().equals(POSTGRES_UNIQUE_CONSTRAINT_VIOLATED)) {
                 throw new RestConflictException(CONFLICT_MESSAGE);
