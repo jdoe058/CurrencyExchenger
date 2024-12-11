@@ -1,6 +1,6 @@
 package dao;
 
-import dto.ExchangeRateFilterDto;
+import dto.ExchangeRateDto;
 import exceptions.RestException;
 import exceptions.RestNotFoundException;
 import models.Currency;
@@ -38,8 +38,7 @@ public class ExchangeRateDao {
             """;
 
     private static final String FIND_BY_CODES_SQL = FIND_ALL_SQL + """
-            WHERE base.code = ?
-                AND target.code = ?
+            WHERE base.code = ? AND target.code = ?
             """;
 
     private static final String INSERT_SQL = """
@@ -55,7 +54,7 @@ public class ExchangeRateDao {
     }
 
     //todo ExchangeRateFilterDto
-    public List<ExchangeRate> findByCodes(ExchangeRateFilterDto filterDto) {
+    public List<ExchangeRate> findByCodes(ExchangeRateDto filterDto) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODES_SQL)) {
             preparedStatement.setString(1, filterDto.baseCode().getCode());
@@ -67,7 +66,7 @@ public class ExchangeRateDao {
             }
             return rates;
         } catch (SQLException e) {
-            throw new RestException();
+            throw new RestException(e.getMessage());
         }
     }
 

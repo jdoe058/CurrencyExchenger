@@ -2,7 +2,7 @@ package servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.ExchangeRateDao;
-import dto.ExchangeRateFilterDto;
+import dto.ExchangeRateDto;
 import exceptions.InvalidCurrencyCodeException;
 import exceptions.RestBadRequestException;
 import exceptions.RestNotFoundException;
@@ -29,7 +29,7 @@ public class ExchangeRateServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            ExchangeRateFilterDto currencyCodes = getCurrencyCodesFromPath(req.getPathInfo());
+            ExchangeRateDto currencyCodes = getCurrencyCodesFromPath(req.getPathInfo());
             ExchangeRate rate = dao.findByCodes(currencyCodes).getFirst();
             mapper.writeValue(resp.getWriter(), rate);
         } catch (NoSuchElementException e) {
@@ -39,12 +39,12 @@ public class ExchangeRateServlet extends HttpServlet {
         }
     }
 
-    private ExchangeRateFilterDto getCurrencyCodesFromPath(String path) {
+    private ExchangeRateDto getCurrencyCodesFromPath(String path) {
         CurrencyCode baseCode = CurrencyCode.of(path.substring(
                 BASE_CODE_BEGIN_INDEX_IN_PATH,
                 TARGET_CODE_BEGIN_INDEX_IN_PATH));
         CurrencyCode  targetCode = CurrencyCode.of(path.substring(
                 TARGET_CODE_BEGIN_INDEX_IN_PATH));
-        return new ExchangeRateFilterDto(baseCode, targetCode);
+        return ExchangeRateDto.of(baseCode, targetCode);
     }
 }
