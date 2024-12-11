@@ -1,4 +1,6 @@
 package dto;
 
-public record ExchangeRateFilterDto(String baseCode, String targetCode) {
+import models.CurrencyCode;
+
+public record ExchangeRateFilterDto(CurrencyCode baseCode, CurrencyCode targetCode) {
 }

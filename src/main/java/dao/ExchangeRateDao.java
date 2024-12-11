@@ -55,17 +55,17 @@ public class ExchangeRateDao {
     }
 
     //todo ExchangeRateFilterDto
-    public Optional<ExchangeRate> findByCodes(ExchangeRateFilterDto filterDto) {
+    public List<ExchangeRate> findByCodes(ExchangeRateFilterDto filterDto) {
         try (Connection connection = ConnectionManager.get();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODES_SQL)) {
-            preparedStatement.setString(1, filterDto.baseCode());
-            preparedStatement.setString(2, filterDto.targetCode());
+            preparedStatement.setString(1, filterDto.baseCode().getCode());
+            preparedStatement.setString(2, filterDto.targetCode().getCode());
             ResultSet resultSet = preparedStatement.executeQuery();
-            ExchangeRate rate = null;
+            List<ExchangeRate> rates = new ArrayList<>();
             if (resultSet.next()) {
-                rate = buildExchangeRate(resultSet);
+                rates.add(buildExchangeRate(resultSet));
             }
-            return Optional.ofNullable(rate);
+            return rates;
         } catch (SQLException e) {
             throw new RestException();
         }
