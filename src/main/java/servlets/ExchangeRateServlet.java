@@ -30,7 +30,7 @@ public class ExchangeRateServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             ExchangeRateDto currencyCodes = getCurrencyCodesFromPath(req.getPathInfo());
-            ExchangeRate rate = dao.findByCodes(currencyCodes).getFirst();
+            ExchangeRate rate = dao.find(currencyCodes).getFirst();
             mapper.writeValue(resp.getWriter(), rate);
         } catch (NoSuchElementException e) {
             throw new RestNotFoundException(EXCHANGE_RATE_NOT_FOUND_MESSAGE);

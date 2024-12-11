@@ -15,7 +15,6 @@ import java.util.NoSuchElementException;
 public class ExchangeRateDao {
 
     private static final ExchangeRateDao INSTANCE = new ExchangeRateDao();
-
     private static final CurrencyDao currencyDao = CurrencyDao.getInstance();
 
     private static final String FIND_ALL_SQL = """
@@ -60,30 +59,29 @@ public class ExchangeRateDao {
         return INSTANCE;
     }
 
-    //todo ExchangeRateFilterDto
-    public List<ExchangeRate> findByCodes(ExchangeRateDto filterDto) {
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODES_SQL)) {
-            preparedStatement.setString(1, filterDto.baseCode().getCode());
-            preparedStatement.setString(2, filterDto.targetCode().getCode());
-            ResultSet resultSet = preparedStatement.executeQuery();
-            List<ExchangeRate> rates = new ArrayList<>();
-            if (resultSet.next()) {
-                rates.add(buildExchangeRate(resultSet));
-            }
-            return rates;
-        } catch (SQLException e) {
-            throw new RestException(e.getMessage());
-        }
+    public List<ExchangeRate>find() {
+        return find(null);
     }
 
-    public List<ExchangeRate> findAll() {
-        List<ExchangeRate> rates = new ArrayList<>();
+    public List<ExchangeRate> find(ExchangeRateDto filterDto) {
+        String sql = filterDto != null ? FIND_BY_CODES_SQL : FIND_ALL_SQL;
         try (Connection connection = ConnectionManager.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            if(filterDto != null) {
+                preparedStatement.setString(1, filterDto.baseCode().getCode());
+                preparedStatement.setString(2, filterDto.targetCode().getCode());
+            };
+
             ResultSet resultSet = preparedStatement.executeQuery();
+            List<ExchangeRate> rates = new ArrayList<>();
             while (resultSet.next()) {
-                rates.add(buildExchangeRate(resultSet));
+                rates.add(ExchangeRate.builder()
+                        .id(resultSet.getInt("id"))
+                        .baseCurrency(Currency.fromResultSetWithPrefix(resultSet, "base_"))
+                        .targetCurrency(Currency.fromResultSetWithPrefix(resultSet, "target_"))
+                        .rate(resultSet.getBigDecimal("rate"))
+                        .build());
             }
             return rates;
         } catch (SQLException e) {
@@ -104,7 +102,7 @@ public class ExchangeRateDao {
             preparedStatement.setObject(2, targetCurrency.getId());
             preparedStatement.setObject(3, rate.getRate());
 
-            if(id == null) {
+            if (id == null) {
                 preparedStatement.executeUpdate();
                 ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
                 if (generatedKeys.next()) {
@@ -124,14 +122,5 @@ public class ExchangeRateDao {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private ExchangeRate buildExchangeRate(ResultSet resultSet) throws SQLException {
-        return ExchangeRate.builder()
-                .id(resultSet.getInt("id"))
-                .baseCurrency(Currency.fromResultSetWithPrefix(resultSet, "base_"))
-                .targetCurrency(Currency.fromResultSetWithPrefix(resultSet, "target_"))
-                .rate(resultSet.getBigDecimal("rate"))
-                .build();
     }
 }

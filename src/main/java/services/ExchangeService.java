@@ -69,6 +69,6 @@ public class ExchangeService {
     }
 
     private Optional<ExchangeRate> getExchangeRate(CurrencyCode from, CurrencyCode to) {
-        return dao.findByCodes(ExchangeRateDto.of(from, to)).stream().findAny();
+        return dao.find(ExchangeRateDto.of(from, to)).stream().findAny();
     }
 }

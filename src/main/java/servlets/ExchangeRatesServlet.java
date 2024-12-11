@@ -7,9 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import models.Currency;
-import models.CurrencyCode;
-import models.ExchangeRate;
+import models.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -22,7 +20,7 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        mapper.writeValue(resp.getWriter(), dao.findAll());
+        mapper.writeValue(resp.getWriter(), dao.find());
     }
 
     @Override
