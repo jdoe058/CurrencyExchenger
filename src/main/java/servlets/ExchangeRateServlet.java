@@ -14,6 +14,7 @@ import models.CurrencyCode;
 import models.ExchangeRate;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 
 @WebServlet("/exchangeRate/*")
@@ -39,6 +40,19 @@ public class ExchangeRateServlet extends HttpServlet {
         }
     }
 
+    @Override
+    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            var preparedRate = getExchangeRateFromParameters(req.getPathInfo(), req.getParameter("rate"));
+            ExchangeRate rate = dao.update(preparedRate);
+            mapper.writeValue(resp.getWriter(), rate);
+        } catch (NoSuchElementException e) {
+            throw new RestNotFoundException(EXCHANGE_RATE_NOT_FOUND_MESSAGE);
+        } catch (InvalidCurrencyCodeException | IndexOutOfBoundsException e) {
+            throw new RestBadRequestException(CURRENCY_CODES_MISSED_MESSAGE);
+        }
+    }
+
     private ExchangeRateDto getCurrencyCodesFromPath(String path) {
         CurrencyCode baseCode = CurrencyCode.of(path.substring(
                 BASE_CODE_BEGIN_INDEX_IN_PATH,
@@ -46,5 +60,14 @@ public class ExchangeRateServlet extends HttpServlet {
         CurrencyCode  targetCode = CurrencyCode.of(path.substring(
                 TARGET_CODE_BEGIN_INDEX_IN_PATH));
         return ExchangeRateDto.of(baseCode, targetCode);
+    }
+
+    private ExchangeRateDto getExchangeRateFromParameters(String path, String rate) {
+        CurrencyCode baseCode = CurrencyCode.of(path.substring(
+                BASE_CODE_BEGIN_INDEX_IN_PATH,
+                TARGET_CODE_BEGIN_INDEX_IN_PATH));
+        CurrencyCode  targetCode = CurrencyCode.of(path.substring(
+                TARGET_CODE_BEGIN_INDEX_IN_PATH));
+        return ExchangeRateDto.of(baseCode, targetCode, new BigDecimal(rate));
     }
 }

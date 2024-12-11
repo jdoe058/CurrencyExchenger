@@ -27,7 +27,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ExchangeRate preparedRate = getExchangeRateFromRequest(req)
                 .orElseThrow(ExchangeRateMissingFieldException::new);
-        ExchangeRate rate = dao.save(preparedRate);
+        ExchangeRate rate = dao.insert(preparedRate);
         resp.setStatus(HttpServletResponse.SC_CREATED);
         mapper.writeValue(resp.getWriter(), rate);
     }

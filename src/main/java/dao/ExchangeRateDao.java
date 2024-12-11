@@ -7,6 +7,7 @@ import models.Currency;
 import models.ExchangeRate;
 import utilities.ConnectionManager;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +47,7 @@ public class ExchangeRateDao {
 
     private static final String UPDATE_SQL = """
             UPDATE exchange_rates
-            SET base_currency_id = ?,
-                target_currency_id = ?,
-                rate = ?
+            SET rate = ?
             WHERE id = ?
             """;
 
@@ -59,29 +58,16 @@ public class ExchangeRateDao {
         return INSTANCE;
     }
 
-    public List<ExchangeRate>find() {
+    public List<ExchangeRate> find() {
         return find(null);
     }
 
     public List<ExchangeRate> find(ExchangeRateDto filterDto) {
-        String sql = filterDto != null ? FIND_BY_CODES_SQL : FIND_ALL_SQL;
-        try (Connection connection = ConnectionManager.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            if(filterDto != null) {
-                preparedStatement.setString(1, filterDto.baseCode().getCode());
-                preparedStatement.setString(2, filterDto.targetCode().getCode());
-            }
-
-            ResultSet resultSet = preparedStatement.executeQuery();
+        try (Connection connection = ConnectionManager.get()) {
+            ResultSet resultSet = find(filterDto, connection);
             List<ExchangeRate> rates = new ArrayList<>();
             while (resultSet.next()) {
-                rates.add(ExchangeRate.builder()
-                        .id(resultSet.getInt("id"))
-                        .baseCurrency(Currency.fromResultSetWithPrefix(resultSet, "base_"))
-                        .targetCurrency(Currency.fromResultSetWithPrefix(resultSet, "target_"))
-                        .rate(resultSet.getBigDecimal("rate"))
-                        .build());
+                rates.add(buildExchangeRate(resultSet, null));
             }
             return rates;
         } catch (SQLException e) {
@@ -89,12 +75,39 @@ public class ExchangeRateDao {
         }
     }
 
-    public ExchangeRate save(ExchangeRate rate) {
-        Integer id = rate.getId();
+    public ResultSet find(ExchangeRateDto filterDto, Connection connection) throws SQLException {
+        String sql = filterDto != null ? FIND_BY_CODES_SQL : FIND_ALL_SQL;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            if (filterDto != null) {
+                preparedStatement.setString(1, filterDto.baseCode().getCode());
+                preparedStatement.setString(2, filterDto.targetCode().getCode());
+            }
+            return preparedStatement.executeQuery();
+        }
+    }
+
+    public ExchangeRate update(ExchangeRateDto preparedRate) {
+        try (Connection connection = ConnectionManager.get()) {
+            ResultSet resultSet = find(preparedRate, connection);
+            if (!resultSet.next()) {
+                throw new RestNotFoundException("Одна (или обе) валюта из валютной пары не существует в БД");
+            }
+            ExchangeRate exchangeRate = buildExchangeRate(resultSet, preparedRate.amount());
+            try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
+                preparedStatement.setObject(1, preparedRate.amount());
+                preparedStatement.setObject(2, exchangeRate.getId());
+                preparedStatement.executeUpdate();
+            }
+            return exchangeRate;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ExchangeRate insert(ExchangeRate rate) {
         try (Connection connection = ConnectionManager.get();
-             PreparedStatement preparedStatement = id == null
-                     ? connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)
-                     : connection.prepareStatement(UPDATE_SQL)) {
+             PreparedStatement preparedStatement =
+                     connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
             Currency baseCurrency = currencyDao.find(rate.getBaseCurrencyCode(), connection).getFirst();
             Currency targetCurrency = currencyDao.find(rate.getTargetCurrencyCode(), connection).getFirst();
 
@@ -102,25 +115,28 @@ public class ExchangeRateDao {
             preparedStatement.setObject(2, targetCurrency.getId());
             preparedStatement.setObject(3, rate.getRate());
 
-            if (id == null) {
-                preparedStatement.executeUpdate();
-                ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    id = generatedKeys.getInt("id");
-                }
-            } else {
-                preparedStatement.setObject(4, id);
-                preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                return ExchangeRate.builder().id(generatedKeys.getInt("id"))
+                        .baseCurrency(baseCurrency)
+                        .targetCurrency(targetCurrency)
+                        .rate(rate.getRate()).build();
             }
-            return ExchangeRate.builder().id(id)
-                    .baseCurrency(baseCurrency)
-                    .targetCurrency(targetCurrency)
-                    .rate(rate.getRate()).build();
-
+            return null;
         } catch (NoSuchElementException e) {
             throw new RestNotFoundException("Одна (или обе) валюта из валютной пары не существует в БД");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static ExchangeRate buildExchangeRate(ResultSet resultSet, BigDecimal newRate) throws SQLException {
+        return ExchangeRate.builder()
+                .id(resultSet.getInt("id"))
+                .baseCurrency(Currency.fromResultSetWithPrefix(resultSet, "base_"))
+                .targetCurrency(Currency.fromResultSetWithPrefix(resultSet, "target_"))
+                .rate(newRate == null ? resultSet.getBigDecimal("rate") : newRate)
+                .build();
     }
 }
