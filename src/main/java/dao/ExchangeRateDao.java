@@ -46,6 +46,14 @@ public class ExchangeRateDao {
             VALUES (?, ?, ?)
             """;
 
+    private static final String UPDATE_SQL = """
+            UPDATE exchange_rates
+            SET base_currency_id = ?,
+                target_currency_id = ?,
+                rate = ?
+            WHERE id = ?
+            """;
+
     private ExchangeRateDao() {
     }
 
@@ -84,23 +92,33 @@ public class ExchangeRateDao {
         }
     }
 
-    public Optional<ExchangeRate> save(ExchangeRate rate) {
+    public ExchangeRate save(ExchangeRate rate) {
+        Integer id = rate.getId();
         try (Connection connection = ConnectionManager.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
-            Currency baseCurrency = currencyDao.find(rate.getBaseCurrency().getCode(), connection).getFirst();
-            Currency targetCurrency = currencyDao.find(rate.getTargetCurrency().getCode(), connection).getFirst();
+             PreparedStatement preparedStatement = id == null
+                     ? connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)
+                     : connection.prepareStatement(UPDATE_SQL)) {
+            Currency baseCurrency = currencyDao.find(rate.getBaseCurrencyCode(), connection).getFirst();
+            Currency targetCurrency = currencyDao.find(rate.getTargetCurrencyCode(), connection).getFirst();
 
             preparedStatement.setObject(1, baseCurrency.getId());
             preparedStatement.setObject(2, targetCurrency.getId());
             preparedStatement.setObject(3, rate.getRate());
-            preparedStatement.executeUpdate();
 
-            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            if (generatedKeys.next()) {
-               return Optional.of(ExchangeRate.builder().id(generatedKeys.getInt("id"))
-                       .baseCurrency(baseCurrency).targetCurrency(targetCurrency).rate(rate.getRate()).build());
+            if(id == null) {
+                preparedStatement.executeUpdate();
+                ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    id = generatedKeys.getInt("id");
+                }
+            } else {
+                preparedStatement.setObject(4, id);
+                preparedStatement.executeUpdate();
             }
-            return Optional.empty();
+            return ExchangeRate.builder().id(id)
+                    .baseCurrency(baseCurrency)
+                    .targetCurrency(targetCurrency)
+                    .rate(rate.getRate()).build();
 
         } catch (NoSuchElementException e) {
             throw new RestNotFoundException("Одна (или обе) валюта из валютной пары не существует в БД");

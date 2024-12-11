@@ -3,7 +3,6 @@ package servlets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.ExchangeRateDao;
 import exceptions.ExchangeRateMissingFieldException;
-import exceptions.RestException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +29,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ExchangeRate preparedRate = getExchangeRateFromRequest(req)
                 .orElseThrow(ExchangeRateMissingFieldException::new);
-        ExchangeRate rate = dao.save(preparedRate).orElseThrow(RestException::new);
+        ExchangeRate rate = dao.save(preparedRate);
         resp.setStatus(HttpServletResponse.SC_CREATED);
         mapper.writeValue(resp.getWriter(), rate);
     }

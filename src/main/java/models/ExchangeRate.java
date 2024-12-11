@@ -7,8 +7,16 @@ import java.math.BigDecimal;
 @Value
 @Builder
 public class ExchangeRate {
-    int id;
+    Integer id;
     Currency baseCurrency;
     Currency targetCurrency;
     BigDecimal rate;
+
+    public String getBaseCurrencyCode() {
+        return baseCurrency.getCode();
+    }
+
+    public String getTargetCurrencyCode() {
+        return targetCurrency.getCode();
+    }
 }
