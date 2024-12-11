@@ -71,7 +71,7 @@ public class ExchangeRateDao {
             if(filterDto != null) {
                 preparedStatement.setString(1, filterDto.baseCode().getCode());
                 preparedStatement.setString(2, filterDto.targetCode().getCode());
-            };
+            }
 
             ResultSet resultSet = preparedStatement.executeQuery();
             List<ExchangeRate> rates = new ArrayList<>();
